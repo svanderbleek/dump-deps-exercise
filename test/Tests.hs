@@ -1,0 +1,6 @@
+-- Transitive Reduction
+--
+-- Removes edges that are induced by transitivity
+--
+-- >>> transitiveReduction (DL (MI "A") (DL (MI "B") (D (MI "C") :| [])) :| D (MI "C") :| [])
+-- DL (MI "A") (DL (MI "B") (D (MI "C") :| [])  :| [])

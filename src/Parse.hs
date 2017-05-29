@@ -28,10 +28,6 @@ import GHC.Paths
 import Control.Monad.IO.Class
   (liftIO)
 
-import Domain
-  (ModuleIdentifier
-  ,FoundModule)
-
 showTarget :: Target -> String
 showTarget (Target (TargetModule m) _ _) = moduleNameString m
 showTarget (Target (TargetFile f _) _ _) = f
@@ -47,7 +43,7 @@ showModLocs :: ModSummary -> String
 showModLocs (ModSummary _ _ _ _ _ _ _ txtimps _ _ _) =
   show (moduleNameString . unLoc . snd <$> txtimps)
 
-findModules :: FilePath -> IO [FoundModule]
+findModules :: FilePath -> IO ()
 findModules file =
   runGhc (Just libdir) $ do
     flags <- getSessionDynFlags
@@ -58,4 +54,4 @@ findModules file =
     liftIO $ print (showModSummary <$> modules)
     liftIO $ print (showModImps <$> modules)
     liftIO $ print (showModLocs <$> modules)
-    return []
+    return ()

@@ -1,22 +1,9 @@
 module Deps
-  (findDependencies
-  ,Dependencies)
+  (findDependencies)
 where
-
-import Graph
-  (transitiveReduction)
-
-import Parse
-  (findModules)
-
-import Domain
-  (ModuleIdentifier(..)
-  ,Dependencies(..))
 
 findDependencies
   :: FilePath -- entry point
   -> FilePath -- src directory
-  -> IO Dependencies
-findDependencies file src =
-  do
-    return (D (MI ""))
+  -> IO ()
+findDependencies file src = undefined

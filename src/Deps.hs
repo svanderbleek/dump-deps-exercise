@@ -1,9 +1,13 @@
 module Deps
-  (findDependencies)
+  (findDeps)
 where
 
-findDependencies
+import Parse
+  (parseModules)
+
+findDeps
   :: FilePath -- entry point
   -> FilePath -- src directory
-  -> IO ()
-findDependencies file src = undefined
+  -> IO [String]
+findDeps file src =
+  parseModules file

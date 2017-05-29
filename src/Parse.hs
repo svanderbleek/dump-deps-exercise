@@ -1,5 +1,5 @@
 module Parse
-  (findModules)
+  (parseModules)
 where
 
 import GHC (runGhc
@@ -28,30 +28,12 @@ import GHC.Paths
 import Control.Monad.IO.Class
   (liftIO)
 
-showTarget :: Target -> String
-showTarget (Target (TargetModule m) _ _) = moduleNameString m
-showTarget (Target (TargetFile f _) _ _) = f
-
-showModSummary :: ModSummary -> String
-showModSummary (ModSummary m _ _ _ _ _ _ _ _ _ _) = moduleNameString (moduleName m)
-
-showModImps :: ModSummary -> String
-showModImps (ModSummary _ _ _ _ _ _ srcimps txtimps _ _ _) =
-  "srcimps:" ++ (show (length srcimps)) ++ ",txtimps:" ++ (show (length txtimps))
-
-showModLocs :: ModSummary -> String
-showModLocs (ModSummary _ _ _ _ _ _ _ txtimps _ _ _) =
-  show (moduleNameString . unLoc . snd <$> txtimps)
-
-findModules :: FilePath -> IO ()
-findModules file =
+parseModules :: FilePath -> IO [String]
+parseModules file =
   runGhc (Just libdir) $ do
     flags <- getSessionDynFlags
     setSessionDynFlags $ flags { hscTarget = HscNothing, ghcLink = NoLink }
     target <- guessTarget file Nothing
     addTarget target
-    modules <- depanal [] False
-    liftIO $ print (showModSummary <$> modules)
-    liftIO $ print (showModImps <$> modules)
-    liftIO $ print (showModLocs <$> modules)
-    return ()
+    found <- depanal [] False
+    return $ (moduleNameString . unLoc . snd) <$> (found >>= ms_textual_imps)

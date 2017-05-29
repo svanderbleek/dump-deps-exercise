@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 import Test.Hspec
   (hspec
@@ -18,15 +19,22 @@ main =
   hspec $ do
     describe "executable" $ do
       it "outputs help" $ do
-        (_, out, err) <- readProcessWithExitCode "stack" ["exec", "deps"] ""
-        err `shouldBe` helpErr
+        (_, out, err) <- runHelp
+        out `shouldBe` helpErr
+
+runHelp :: IO (_, String, String)
+runHelp =
+  readProcessWithExitCode "stack" ["exec", "deps", "--", "-h"] ""
 
 helpErr :: String
-helpErr = [r|
-Test program
+helpErr = unlines . tail . lines $ [r|
+deps - a command line haskell parser
 
-Usage: Example.hs --foo INT --bar DOUBLE
+Usage: deps root --src source
+  Find dependencies of root in source
 
 Available options:
+  root                     root file
+  --src source             source directory
   -h,--help                Show this help text
 |]

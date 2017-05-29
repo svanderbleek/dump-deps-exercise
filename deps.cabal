@@ -31,4 +31,4 @@ executable deps
   main-is: Main.hs
   build-depends:
     base,
-    optparse-generic
+    optparse-applicative

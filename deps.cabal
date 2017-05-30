@@ -11,7 +11,9 @@ library
   build-depends:
     base,
     ghc,
-    ghc-paths
+    ghc-paths,
+    hashable,
+    fgl
 
 test-suite test
   default-language: Haskell2010
@@ -31,4 +33,9 @@ executable deps
   main-is: Main.hs
   build-depends:
     base,
+    deps,
+    ghc,
+    ghc-paths,
+    hashable,
+    fgl,
     optparse-applicative

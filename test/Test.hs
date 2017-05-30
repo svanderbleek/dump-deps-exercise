@@ -35,11 +35,6 @@ main =
         (code, _, _) <- runArgs ["root", "--src", "source"]
         code `shouldBe` ExitSuccess
 
-    describe "parse" $ do
-      it "finds dependencies of root" $ do
-        deps <- findDeps "src/Main.hs" ""
-        deps `shouldBe` ["Prelude", "Data.Semigroup", "Options.Applicative"]
-
 runHelp :: IO String
 runHelp =
   readProcess "stack" ["exec", "deps", "--", "-h"] ""

@@ -1,5 +1,7 @@
 module Parse
-  (parseModules)
+  (parseModules
+  ,ModWithDeps(..)
+  ,ModId(..))
 where
 
 import GHC (runGhc
@@ -9,18 +11,17 @@ import GHC (runGhc
   ,ghcLink
   ,guessTarget
   ,addTarget
-  ,getTargets
   ,depanal
   ,moduleNameString
   ,moduleName
   ,unLoc
+  ,ms_mod_name
   ,GhcMonad
   ,HscTarget(..)
   ,GhcLink(..)
-  ,Target(..)
-  ,TargetId(..)
   ,ModSummary(..)
-  ,Module(..))
+  ,Module(..)
+  ,ModuleName)
 
 import GHC.Paths
   (libdir)
@@ -28,7 +29,16 @@ import GHC.Paths
 import Control.Monad.IO.Class
   (liftIO)
 
-parseModules :: FilePath -> IO [String]
+data ModId
+  = ModId String
+  deriving (Show)
+
+data ModWithDeps
+  = ModWithDeps
+  { modn :: ModId
+  , deps :: [ModId] }
+
+parseModules :: FilePath -> IO ModWithDeps
 parseModules file =
   runGhc (Just libdir) $ do
     flags <- getSessionDynFlags
@@ -36,4 +46,11 @@ parseModules file =
     target <- guessTarget file Nothing
     addTarget target
     found <- depanal [] False
-    return $ (moduleNameString . unLoc . snd) <$> (found >>= ms_textual_imps)
+    -- TODO convert partial function to total with error
+    return $ parseModWithDeps (head found)
+
+parseModWithDeps :: ModSummary -> ModWithDeps
+parseModWithDeps ms =
+  ModWithDeps
+  { modn = ModId $ moduleNameString (ms_mod_name ms)
+  , deps = ModId . moduleNameString . unLoc . snd <$> ms_textual_imps ms }

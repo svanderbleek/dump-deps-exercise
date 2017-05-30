@@ -19,17 +19,22 @@ import Options.Applicative
 import Data.Semigroup
   ((<>))
 
+import Deps
+  (findDeps)
+
+import Data.Graph.Inductive.Graph
+  (prettyPrint)
+
 data DepsCmd
-  = DepsCmd
-  { root :: FilePath
-  , src :: FilePath }
+  = DepsCmd FilePath FilePath
   deriving (Show)
 
 main :: IO ()
 main =
   do
-    cmd <- execParser progParser
-    print cmd
+    (DepsCmd root source) <- execParser progParser
+    deps <- findDeps root source
+    prettyPrint deps
 
 progParser =
   info

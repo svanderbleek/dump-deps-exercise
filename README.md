@@ -5,7 +5,7 @@ Build module dependencies from entry point using directory of sources.
 ## Usage
 
 ```
-./deps Entry.hs src/
+stack exec deps -- src/Main.hs --src=src/
 ```
 
 ## Build

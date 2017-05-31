@@ -1,11 +1,12 @@
 module Graph
   (emptyDeps
   ,insertDeps
+  ,displayDeps
   ,transReduc)
 where
 
 import Types
-  (ModId
+  (ModId(..)
   ,ModEdge
   ,ModWithDeps(..)
   ,Deps)
@@ -15,6 +16,7 @@ import Data.Graph.Inductive.Graph
   ,insNode
   ,insNodes
   ,insEdges
+  ,prettify
   ,LEdge
   ,LNode)
 
@@ -23,26 +25,10 @@ emptyDeps =
   empty
 
 insertDeps :: Deps -> ModWithDeps -> Deps
-insertDeps g (ModWithDeps modn deps) =
-  insNode (mkNode g modn) g
-  where
-    root = mkNode g modn
-    edges = mkNode
+insertDeps g (ModWithDeps modn deps) = undefined
 
 transReduc :: Deps -> Deps
 transReduc = undefined
 
-insEdges =
-  (mkEdge modn <$> deps)
-  (insNodes
-    (mkNode <$> deps)
-    (insNode (mkNode modn) empty))
-
-mkNode :: ModId -> LNode ModId
-mkNode (ModId label) =
-  (hash label, ModId label)
-
-mkEdge :: ModId -> ModId -> LEdge ModEdge
-mkEdge (ModId to) (ModId from) =
-  (hash to, hash from, ModEdge "depends")
-
+displayDeps :: Deps -> String
+displayDeps = prettify

@@ -1,4 +1,9 @@
-module Types where
+module Types
+  (ModId(..)
+  ,ModEdge(..)
+  ,ModWithDeps(..)
+  ,Deps)
+where
 
 import Data.Graph.Inductive.PatriciaTree
   (Gr)

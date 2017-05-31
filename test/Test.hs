@@ -4,7 +4,8 @@ import Test.Hspec
   (hspec
   ,describe
   ,it
-  ,shouldBe)
+  ,shouldBe
+  ,shouldSatisfy)
 
 import System.Process
   (readProcess
@@ -18,6 +19,19 @@ import Text.RawString.QQ
 
 import Deps
   (findDeps)
+
+import Graph
+  (displayDeps
+  ,insertDeps
+  ,emptyDeps)
+
+import Types
+  (Deps
+  ,ModWithDeps(..)
+  ,ModId(..))
+
+import Data.List
+  (isInfixOf)
 
 main :: IO ()
 main =
@@ -34,6 +48,15 @@ main =
       it "parses root and source" $ do
         (code, _, _) <- runArgs ["src/Main.hs", "--src", "src/"]
         code `shouldBe` ExitSuccess
+
+    describe "graph" $ do
+      it "displays module dependency graphs" $ do
+        let out = displayDeps simpleDeps
+        out `shouldSatisfy` (isInfixOf "M1")
+        out `shouldSatisfy` (isInfixOf "D1")
+
+simpleDeps :: Deps
+simpleDeps = insertDeps emptyDeps (ModWithDeps (ModId "M1") [ModId "D1"])
 
 runHelp :: IO String
 runHelp =

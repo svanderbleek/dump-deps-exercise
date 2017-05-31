@@ -18,6 +18,10 @@ import System.FilePath.Find
   ,extension
   ,(==?))
 
+import Types
+  (ModWithDeps(..)
+  ,Deps)
+
 findDeps :: FilePath -> FilePath -> IO Deps
 findDeps root source =
   find allFiles withHs source >>= runFindDeps root
@@ -26,7 +30,7 @@ findDeps root source =
     withHs = extension ==? ".hs"
 
 runFindDeps :: FilePath -> [FilePath] -> IO Deps
-runFindDeps =
+runFindDeps root sourceFiles =
   do
-    (ModWithDeps modn deps) <- parseModules root
-    return $ Graph
+    deps <- parseModules root
+    return $ insertDeps emptyDeps deps

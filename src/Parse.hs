@@ -4,6 +4,10 @@ module Parse
   ,ModId(..))
 where
 
+import Types
+  (ModWithDeps(..)
+  ,ModId(..))
+
 import GHC (runGhc
   ,getSessionDynFlags
   ,setSessionDynFlags
@@ -28,15 +32,6 @@ import GHC.Paths
 
 import Control.Monad.IO.Class
   (liftIO)
-
-data ModId
-  = ModId String
-  deriving (Show)
-
-data ModWithDeps
-  = ModWithDeps
-  { modn :: ModId
-  , deps :: [ModId] }
 
 parseModules :: FilePath -> IO ModWithDeps
 parseModules file =

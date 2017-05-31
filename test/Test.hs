@@ -32,7 +32,7 @@ main =
         code `shouldBe` ExitFailure 1
 
       it "parses root and source" $ do
-        (code, _, _) <- runArgs ["root", "--src", "source"]
+        (code, _, _) <- runArgs ["src/Main.hs", "--src", "src/"]
         code `shouldBe` ExitSuccess
 
 runHelp :: IO String

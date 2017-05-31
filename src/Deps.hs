@@ -5,42 +5,28 @@ module Deps
 where
 
 import Parse
-  (parseModules
-  ,ModWithDeps(..)
-  ,ModId(..))
+  (parseModules)
 
-import Data.Graph.Inductive.Graph
-  (empty
-  ,insNode
-  ,insNodes
-  ,insEdges
-  ,LEdge
-  ,LNode)
+import Graph
+  (emptyDeps
+  ,insertDeps
+  ,transReduc)
 
-import Data.Graph.Inductive.PatriciaTree
-  (Gr)
+import System.FilePath.Find
+  (find
+  ,always
+  ,extension
+  ,(==?))
 
-import Data.Hashable
-  (hash)
-
-data ModEdge
-  = ModEdge String
-  deriving (Eq, Show)
-
-findDeps :: FilePath -> FilePath -> IO (Gr ModId ModEdge)
+findDeps :: FilePath -> FilePath -> IO Deps
 findDeps root source =
+  find allFiles withHs source >>= runFindDeps root
+  where
+    allFiles = always
+    withHs = extension ==? ".hs"
+
+runFindDeps :: FilePath -> [FilePath] -> IO Deps
+runFindDeps =
   do
     (ModWithDeps modn deps) <- parseModules root
-    return $ insEdges
-      (mkEdge modn <$> deps)
-      (insNodes
-        (mkNode <$> deps)
-        (insNode (mkNode modn) empty))
-
-mkNode :: ModId -> LNode ModId
-mkNode (ModId label) =
-  (hash label, ModId label)
-
-mkEdge :: ModId -> ModId -> LEdge ModEdge
-mkEdge (ModId to) (ModId from) =
-  (hash to, hash from, ModEdge "depends")
+    return $ Graph

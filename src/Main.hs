@@ -22,8 +22,8 @@ import Data.Semigroup
 import Deps
   (findDeps)
 
-import Data.Graph.Inductive.Graph
-  (prettyPrint)
+import Graph
+  (displayDeps)
 
 data DepsCmd
   = DepsCmd FilePath FilePath
@@ -34,7 +34,7 @@ main =
   do
     (DepsCmd root source) <- execParser progParser
     deps <- findDeps root source
-    prettyPrint deps
+    print $ displayDeps deps
 
 progParser =
   info

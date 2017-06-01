@@ -16,7 +16,7 @@ library
     ghc,
     ghc-paths,
     filemanip,
-    fgl
+    containers
 
 test-suite test
   default-language: Haskell2010
@@ -28,6 +28,7 @@ test-suite test
     hspec,
     raw-strings-qq,
     process,
+    containers,
     deps
 
 executable deps
@@ -41,4 +42,5 @@ executable deps
     ghc-paths,
     filemanip,
     fgl,
-    optparse-applicative
+    optparse-applicative,
+    containers

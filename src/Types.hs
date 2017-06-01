@@ -1,24 +1,23 @@
 module Types
   (ModId(..)
-  ,ModEdge(..)
   ,ModWithDeps(..)
   ,Deps)
 where
 
-import Data.Graph.Inductive.PatriciaTree
-  (Gr)
+import Data.Map
+  (Map)
+
+import Data.Set
+  (Set)
 
 data ModId
   = ModId String
-  deriving (Eq, Show)
-
-data ModEdge
-  = ModEdge String
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 data ModWithDeps
   = ModWithDeps
   { modn :: ModId
   , deps :: [ModId] }
 
-type Deps = Gr ModId ModEdge
+type Deps
+  = Map ModId (Set ModId)

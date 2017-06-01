@@ -7,28 +7,29 @@ where
 
 import Types
   (ModId(..)
-  ,ModEdge
   ,ModWithDeps(..)
   ,Deps)
 
-import Data.Graph.Inductive.Graph
+import Data.Map
   (empty
-  ,insNode
-  ,insNodes
-  ,insEdges
-  ,prettify
-  ,LEdge
-  ,LNode)
+  ,insertWith)
+
+import Data.Set
+  (fromList
+  ,union)
 
 emptyDeps :: Deps
 emptyDeps =
   empty
 
 insertDeps :: Deps -> ModWithDeps -> Deps
-insertDeps g (ModWithDeps modn deps) = undefined
+insertDeps g (ModWithDeps modn deps) =
+  insertWith union modn (fromList deps) g
 
 transReduc :: Deps -> Deps
-transReduc = undefined
+transReduc =
+  undefined
 
 displayDeps :: Deps -> String
-displayDeps = prettify
+displayDeps =
+  show

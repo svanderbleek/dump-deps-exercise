@@ -5,12 +5,8 @@ module Deps
 where
 
 import Parse
-  (parseModules)
-
-import Graph
-  (emptyDeps
-  ,insertDeps
-  ,transReduc)
+  (parseModules
+  ,ModWithDeps(..))
 
 import System.FilePath.Find
   (find
@@ -18,19 +14,10 @@ import System.FilePath.Find
   ,extension
   ,(==?))
 
-import Types
-  (ModWithDeps(..)
-  ,Deps)
-
-findDeps :: FilePath -> FilePath -> IO Deps
-findDeps root source =
-  find allFiles withHs source >>= runFindDeps root
+findDeps :: FilePath -> FilePath -> IO [ModWithDeps]
+findDeps root src = do
+  srcFiles <- find allFiles withHs src
+  mapM parseModules (root:srcFiles)
   where
     allFiles = always
     withHs = extension ==? ".hs"
-
-runFindDeps :: FilePath -> [FilePath] -> IO Deps
-runFindDeps root sourceFiles =
-  do
-    deps <- parseModules root
-    return $ insertDeps emptyDeps deps

@@ -1,14 +1,10 @@
 module Parse
   (parseModules
-  ,ModWithDeps(..)
-  ,ModId(..))
+  ,ModWithDeps)
 where
 
-import Types
-  (ModWithDeps(..)
-  ,ModId(..))
-
-import GHC (runGhc
+import GHC
+  (runGhc
   ,getSessionDynFlags
   ,setSessionDynFlags
   ,hscTarget
@@ -19,7 +15,9 @@ import GHC (runGhc
   ,moduleNameString
   ,moduleName
   ,unLoc
+  ,getLoc
   ,ms_mod_name
+  ,ms_textual_imps
   ,GhcMonad
   ,HscTarget(..)
   ,GhcLink(..)
@@ -30,8 +28,26 @@ import GHC (runGhc
 import GHC.Paths
   (libdir)
 
+import Outputable
+  (ppr
+  ,showSDoc)
+
+import DriverPhases
+  (hscSourceString)
+
 import Control.Monad.IO.Class
   (liftIO)
+
+data ModId
+  = ModId String
+  deriving (Show)
+
+data ModWithDeps
+  = ModWithDeps
+  { file :: FilePath
+  , name :: ModId
+  , deps :: [ModId] }
+  deriving (Show)
 
 parseModules :: FilePath -> IO ModWithDeps
 parseModules file =
@@ -40,12 +56,18 @@ parseModules file =
     setSessionDynFlags $ flags { hscTarget = HscNothing, ghcLink = NoLink }
     target <- guessTarget file Nothing
     addTarget target
-    found <- depanal [] False
-    -- TODO convert partial function to total with error
-    return $ parseModWithDeps (head found)
+    [found] <- depanal [] False
+    return $ ModWithDeps
+      { file = file
+      , name = msModId found
+      , deps = msDeps found }
 
-parseModWithDeps :: ModSummary -> ModWithDeps
-parseModWithDeps ms =
-  ModWithDeps
-  { modn = ModId $ moduleNameString (ms_mod_name ms)
-  , deps = ModId . moduleNameString . unLoc . snd <$> ms_textual_imps ms }
+msDeps :: ModSummary -> [ModId]
+msDeps =
+  (impModId <$>) . ms_textual_imps
+  where
+    impModId = ModId . moduleNameString . unLoc . snd
+
+msModId :: ModSummary -> ModId
+msModId =
+  ModId . moduleNameString . ms_mod_name

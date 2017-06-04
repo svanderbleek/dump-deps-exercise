@@ -14,6 +14,7 @@ import Options.Applicative
   ,help
   ,argument
   ,Parser
+  ,ParserInfo
   ,(<**>))
 
 import Data.Semigroup
@@ -22,21 +23,20 @@ import Data.Semigroup
 import Deps
   (findDeps)
 
-import Graph
-  (displayDeps)
-
 data DepsCmd
-  = DepsCmd FilePath FilePath
+  = DepsCmd
+  { root :: FilePath
+  , src :: FilePath }
   deriving (Show)
 
 main :: IO ()
-main =
-  do
-    (DepsCmd root source) <- execParser progParser
-    deps <- findDeps root source
-    print $ displayDeps deps
+main = do
+  (DepsCmd root src) <- execParser cliParser
+  deps <- findDeps root src
+  print deps
 
-progParser =
+cliParser :: ParserInfo DepsCmd
+cliParser =
   info
     (cmdParser <**> helper)
     (fullDesc <>

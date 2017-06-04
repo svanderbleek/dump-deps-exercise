@@ -1,12 +1,13 @@
 module Deps
   (findDeps
   ,displayDeps
-  ,modsDeps)
+  ,impsAdjc
+  ,Deps(..))
 where
 
-import Parse
-  (parseModules
-  ,ModWithDeps(name, deps)
+import Imps
+  (fileImps
+  ,ModWithImps(..)
   ,ModId(..))
 
 import System.FilePath.Find
@@ -16,43 +17,56 @@ import System.FilePath.Find
   ,(==?))
 
 import Data.Map
-  (Map
-  ,lookup
-  ,foldWithKey
+  (Map ,lookup ,foldWithKey
   ,fromList)
 
 import Data.Maybe
   (catMaybes)
 
-type Deps = Map ModId [ModId]
+import Control.Arrow
+  ((&&&))
+
+-- Adjacency Map
+type Adjc
+  = Map ModId [ModId]
+
+data Deps
+  = Deps
+  { dps_root :: ModId
+  , dps_adjc :: Adjc }
 
 findDeps :: FilePath -> FilePath -> IO Deps
 findDeps root src = do
   srcFiles <- find allFiles withHs src
-  mods <- mapM parseModules (root:srcFiles)
-  return $ modsDeps mods
+  rootImps <- fileImps root
+  srcImps <- mapM fileImps srcFiles
+  return $ Deps
+    { dps_root = mwi_name rootImps
+    , dps_adjc = impsAdjc (rootImps:srcImps) }
   where
     allFiles = always
     withHs = extension ==? ".hs"
 
-displayDeps :: ModId -> Deps -> String
-displayDeps root deps =
-  show root ++ show deps
+displayDeps :: Deps -> String
+displayDeps (Deps root adjc) =
+  show root ++ show adjc
 
-modsDeps :: [ModWithDeps] -> Deps
-modsDeps =
-  cleanDeps . fromList . (dupAp name deps <$>)
+impsAdjc :: [ModWithImps] -> Adjc
+impsAdjc =
+  cleanAdjc . fromList . (modNameImps <$>)
+  where
+    modNameImps = mwi_name &&& mwi_imps
 
-cleanDeps :: Deps -> Deps
-cleanDeps deps =
-  cleanMods <$> deps
+cleanAdjc :: Adjc -> Adjc
+cleanAdjc adjc =
+  cleanMods <$> adjc
   where
     cleanMods :: [ModId] -> [ModId]
     cleanMods mods = catMaybes (includes <$> mods)
     includes :: ModId -> Maybe ModId
-    includes mod = const mod <$> lookup' deps mod
+    includes mod = const mod <$> lookup' adjc mod
     lookup' = flip Data.Map.lookup
 
-dupAp :: (a -> b) -> (a -> d) -> (a -> (b, d))
-dupAp f g =
-  \a -> (f a, g a)
+reduceDeps :: Deps -> Deps
+reduceDeps deps =
+  undefined

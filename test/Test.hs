@@ -20,14 +20,15 @@ import Text.RawString.QQ
 import Deps
   (findDeps
   ,displayDeps
-  ,modsDeps)
+  ,impsAdjc
+  ,Deps(..))
 
-import Parse
-  (ModWithDeps(..)
+import Imps
+  (ModWithImps(..)
   ,ModId(..))
 
 import Data.List
-  (isInfixOf)
+  (elemIndices)
 
 main :: IO ()
 main =
@@ -46,17 +47,24 @@ main =
         code `shouldBe` ExitSuccess
 
     describe "deps" $ do
-      it "displays module dependencys" $ do
-        let out = displayDeps demoA (modsDeps demoDeps)
-        out `shouldSatisfy` (isInfixOf "A")
-        out `shouldSatisfy` (isInfixOf "B")
-        out `shouldSatisfy` (isInfixOf "C")
+      it "displays clean module dependencys" $ do
+        let out = displayDeps demoDeps
+        out `shouldSatisfy` (containsOnce 'A')
+        out `shouldSatisfy` (containsOnce 'B')
+        out `shouldSatisfy` (containsOnce 'C')
 
-demoDeps :: [ModWithDeps]
+containsOnce :: Char -> String -> Bool
+containsOnce c =
+  (==1) . length . elemIndices c
+
+demoDeps :: Deps
 demoDeps =
-  [(ModWithDeps "" demoA [demoB, demoC])
-  ,(ModWithDeps "" demoB [demoC])
-  ,(ModWithDeps "" demoC [])]
+  Deps
+  { dps_root = demoA
+  , dps_adjc = impsAdjc $
+    [(ModWithImps demoA [demoB, demoC])
+    ,(ModWithImps demoB [demoC])
+    ,(ModWithImps demoC [])] }
 
 demoA :: ModId
 demoA =

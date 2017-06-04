@@ -1,6 +1,6 @@
-module Parse
-  (parseModules
-  ,ModWithDeps(..)
+module Imps
+  (fileImps
+  ,ModWithImps(..)
   ,ModId(..))
 where
 
@@ -14,17 +14,12 @@ import GHC
   ,addTarget
   ,depanal
   ,moduleNameString
-  ,moduleName
   ,unLoc
-  ,getLoc
   ,ms_mod_name
   ,ms_textual_imps
-  ,GhcMonad
   ,HscTarget(..)
   ,GhcLink(..)
-  ,ModSummary(..)
-  ,Module(..)
-  ,ModuleName)
+  ,ModSummary(..))
 
 import GHC.Paths
   (libdir)
@@ -36,28 +31,26 @@ data ModId
   = ModId String
   deriving (Eq, Ord, Show)
 
-data ModWithDeps
-  = ModWithDeps
-  { file :: FilePath
-  , name :: ModId
-  , deps :: [ModId] }
+data ModWithImps
+  = ModWithImps
+  { mwi_name :: ModId
+  , mwi_imps :: [ModId] }
   deriving (Show)
 
-parseModules :: FilePath -> IO ModWithDeps
-parseModules file =
+fileImps :: FilePath -> IO ModWithImps
+fileImps file =
   runGhc (Just libdir) $ do
     flags <- getSessionDynFlags
     setSessionDynFlags $ flags { hscTarget = HscNothing, ghcLink = NoLink }
     target <- guessTarget file Nothing
     addTarget target
     [found] <- depanal [] False
-    return $ ModWithDeps
-      { file = file
-      , name = msModId found
-      , deps = msDeps found }
+    return $ ModWithImps
+      { mwi_name = msModId found
+      , mwi_imps = msImps found }
 
-msDeps :: ModSummary -> [ModId]
-msDeps =
+msImps :: ModSummary -> [ModId]
+msImps =
   (impModId <$>) . ms_textual_imps
   where
     impModId = ModId . moduleNameString . unLoc . snd

@@ -20,7 +20,8 @@ import Data.Semigroup
   ((<>))
 
 import Deps
-  (findDeps)
+  (findDeps
+  ,displayDeps)
 
 data DepsCmd
   = DepsCmd
@@ -32,7 +33,7 @@ main :: IO ()
 main = do
   (DepsCmd root src) <- execParser cliParser
   deps <- findDeps root src
-  print deps
+  putStrLn $ displayDeps deps
 
 cliParser :: ParserInfo DepsCmd
 cliParser =

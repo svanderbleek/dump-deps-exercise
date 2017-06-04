@@ -1,5 +1,4 @@
 module Main where
-
 import Options.Applicative
   (execParser
   ,info
@@ -37,14 +36,16 @@ main = do
 
 cliParser :: ParserInfo DepsCmd
 cliParser =
-  info
-    (cmdParser <**> helper)
-    (fullDesc <>
+  info prsr desc
+  where
+    prsr = cmdParser <**> helper
+    desc = fullDesc <>
       header "deps - a command line haskell parser" <>
-      progDesc "Find dependencies of root in source")
+      progDesc "Find dependencies of root in source"
 
 cmdParser :: Parser DepsCmd
 cmdParser =
-  DepsCmd <$>
-    argument str (metavar "root" <> help "root file") <*>
-    strOption (long "src" <> metavar "source" <> help "source directory")
+  DepsCmd <$> arg <*> opt
+  where
+    arg = argument str (metavar "root" <> help "root file")
+    opt = strOption (long "src" <> metavar "source" <> help "source directory")

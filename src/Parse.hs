@@ -29,13 +29,6 @@ import GHC
 import GHC.Paths
   (libdir)
 
-import Outputable
-  (ppr
-  ,showSDoc)
-
-import DriverPhases
-  (hscSourceString)
-
 import Control.Monad.IO.Class
   (liftIO)
 

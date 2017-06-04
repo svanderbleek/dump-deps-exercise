@@ -17,14 +17,20 @@ import System.FilePath.Find
 
 import Data.Map
   (Map
+  ,lookup
+  ,foldWithKey
   ,fromList)
+
+import Data.Maybe
+  (catMaybes)
 
 type Deps = Map ModId [ModId]
 
-findDeps :: FilePath -> FilePath -> IO [ModWithDeps]
+findDeps :: FilePath -> FilePath -> IO Deps
 findDeps root src = do
   srcFiles <- find allFiles withHs src
-  mapM parseModules (root:srcFiles)
+  mods <- mapM parseModules (root:srcFiles)
+  return $ modsDeps mods
   where
     allFiles = always
     withHs = extension ==? ".hs"
@@ -35,7 +41,17 @@ displayDeps root deps =
 
 modsDeps :: [ModWithDeps] -> Deps
 modsDeps =
-  fromList . (dupAp name deps <$>)
+  cleanDeps . fromList . (dupAp name deps <$>)
+
+cleanDeps :: Deps -> Deps
+cleanDeps deps =
+  cleanMods <$> deps
+  where
+    cleanMods :: [ModId] -> [ModId]
+    cleanMods mods = catMaybes (includes <$> mods)
+    includes :: ModId -> Maybe ModId
+    includes mod = const mod <$> lookup' deps mod
+    lookup' = flip Data.Map.lookup
 
 dupAp :: (a -> b) -> (a -> d) -> (a -> (b, d))
 dupAp f g =

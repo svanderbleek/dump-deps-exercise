@@ -1,18 +1,25 @@
-{-# LANGUAGE TupleSections #-}
-
 module Deps
-  (findDeps)
+  (findDeps
+  ,displayDeps
+  ,modsDeps)
 where
 
 import Parse
   (parseModules
-  ,ModWithDeps(..))
+  ,ModWithDeps(name, deps)
+  ,ModId(..))
 
 import System.FilePath.Find
   (find
   ,always
   ,extension
   ,(==?))
+
+import Data.Map
+  (Map
+  ,fromList)
+
+type Deps = Map ModId [ModId]
 
 findDeps :: FilePath -> FilePath -> IO [ModWithDeps]
 findDeps root src = do
@@ -21,3 +28,15 @@ findDeps root src = do
   where
     allFiles = always
     withHs = extension ==? ".hs"
+
+displayDeps :: ModId -> Deps -> String
+displayDeps root deps =
+  show root ++ show deps
+
+modsDeps :: [ModWithDeps] -> Deps
+modsDeps =
+  fromList . (dupAp name deps <$>)
+
+dupAp :: (a -> b) -> (a -> d) -> (a -> (b, d))
+dupAp f g =
+  \a -> (f a, g a)

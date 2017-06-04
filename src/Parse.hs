@@ -1,6 +1,7 @@
 module Parse
   (parseModules
-  ,ModWithDeps)
+  ,ModWithDeps(..)
+  ,ModId(..))
 where
 
 import GHC
@@ -40,7 +41,7 @@ import Control.Monad.IO.Class
 
 data ModId
   = ModId String
-  deriving (Show)
+  deriving (Eq, Ord, Show)
 
 data ModWithDeps
   = ModWithDeps

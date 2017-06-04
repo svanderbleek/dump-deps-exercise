@@ -18,16 +18,12 @@ import Text.RawString.QQ
   (r)
 
 import Deps
-  (findDeps)
+  (findDeps
+  ,displayDeps
+  ,modsDeps)
 
-import Graph
-  (displayDeps
-  ,insertDeps
-  ,emptyDeps)
-
-import Types
-  (Deps
-  ,ModWithDeps(..)
+import Parse
+  (ModWithDeps(..)
   ,ModId(..))
 
 import Data.List
@@ -49,14 +45,30 @@ main =
         (code, _, _) <- runArgs ["src/Main.hs", "--src", "src/"]
         code `shouldBe` ExitSuccess
 
-    describe "graph" $ do
-      it "displays module dependency graphs" $ do
-        let out = displayDeps simpleDeps
-        out `shouldSatisfy` (isInfixOf "M1")
-        out `shouldSatisfy` (isInfixOf "D1")
+    describe "deps" $ do
+      it "displays module dependencys" $ do
+        let out = displayDeps demoA (modsDeps demoDeps)
+        out `shouldSatisfy` (isInfixOf "A")
+        out `shouldSatisfy` (isInfixOf "B")
+        out `shouldSatisfy` (isInfixOf "C")
 
-simpleDeps :: Deps
-simpleDeps = insertDeps emptyDeps (ModWithDeps (ModId "M1") [ModId "D1"])
+demoDeps :: [ModWithDeps]
+demoDeps =
+  [(ModWithDeps "" demoA [demoB, demoC])
+  ,(ModWithDeps "" demoB [demoC])
+  ,(ModWithDeps "" demoC [])]
+
+demoA :: ModId
+demoA =
+  ModId "A"
+
+demoB :: ModId
+demoB =
+  ModId "B"
+
+demoC :: ModId
+demoC =
+  ModId "C"
 
 runHelp :: IO String
 runHelp =

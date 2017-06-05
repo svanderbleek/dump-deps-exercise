@@ -1,74 +1,64 @@
 module Chns
-  (reduceDeps)
+  (reduceDeps
+  ,mkChains
+  ,maxChains
+  ,Chains)
 where
 
 import Typs
-  (ModId
+  (ModId(..)
   ,Deps(..)
   ,Adjc)
 
 import Data.Map
   (Map
   ,empty
-  ,insertWith
   ,insert
-  ,singleton
+  ,insertWith
+  ,findWithDefault
   ,(!))
 
-import Control.Monad.State
-  (State
-  ,evalState
-  ,get
-  ,put)
+type Chain =
+  [ModId]
 
-import Control.Monad.Loops
-  (whileM_)
+type Chains =
+  [Chain]
 
--- Stack of ModId
-type Chain
-  = [ModId]
+type MaxChains =
+  Map ModId Chain
 
--- Map ModId to terminal Chains
-type Chains
-  = Map ModId [Chain]
-
--- Reduce to single terminal Chain
-type RChains
-  = Map ModId Chain
-
--- Build Chains from Deps, convert to Adj
 reduceDeps :: Deps -> Deps
-reduceDeps deps@(Deps root _) =
-  Deps root . reduce $ deps
-  where
-    reduce = chainsAdjc . depsRChains
+reduceDeps (Deps root adjc) =
+  Deps root . chainsAdjc $ mkChains adjc root [root]
 
-depsRChains :: Deps -> RChains
-depsRChains (Deps root adjc) =
-  chainsRChains $ foldr (+:) (term root) adjc
+mkChains :: Adjc -> ModId -> Chain -> Chains
+mkChains a m c =
+  case next of
+    [] -> [c]
+    _ -> foldr (++) [] $ descend <$> next
   where
-    term :: ModId -> Chains
-    term m = singleton m [[m]]
-    (+:) :: [ModId] -> Chains -> Chains
-    ms +: cs = foldr (+::) (adjc ! m)
-    (+::) :: ModId -> Chain -> Chains
-    m +:: cs = undefined
-    (+:::) :: ModId -> Chain -> Chains
-    m +::: c = undefined
+    next = a ! m
+    descend n = mkChains a n $ push n
+    push = (:c)
 
-chainsRChains :: Chains -> RChains
-chainsRChains =
-  foldr (rinsert . maxChain) empty
-  where
-    maxChain :: [Chain] -> Chain
-    maxChain = foldr max []
-    rinsert :: Chain -> RChains -> RChains
-    rinsert v@(k:_) = insert k v
-
-chainsAdjc :: RChains -> Adjc
+chainsAdjc :: Chains -> Adjc
 chainsAdjc =
-  foldr combine empty
+  mkAdjc . maxChains
+
+maxChains :: Chains -> MaxChains
+maxChains =
+  foldr maxChain empty
   where
-    combine :: Chain -> Adjc -> Adjc
-    combine (k:[]) = insert k []
-    combine (k:v:_) = insert k [v]
+    maxChain :: Chain -> MaxChains -> MaxChains
+    maxChain v@(k:_) = insertWith max k v
+
+mkAdjc :: MaxChains -> Adjc
+mkAdjc =
+  foldr unwindChain empty
+  where
+    unwindChain :: Chain -> Adjc -> Adjc
+    unwindChain c a = foldr insertAdjacent a (adjacentPairs c)
+    insertAdjacent :: (ModId, ModId) -> Adjc -> Adjc
+    insertAdjacent (child, parent) a = insert parent (child : findWithDefault [] parent a) a
+    adjacentPairs :: [a] -> [(a, a)]
+    adjacentPairs l@(_:t) = zip l t

@@ -40,6 +40,7 @@ executable deps
     ghc,
     ghc-paths,
     filemanip,
-    fgl,
+    mtl,
     optparse-applicative,
+    monad-loops,
     containers

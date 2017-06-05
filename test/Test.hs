@@ -21,15 +21,23 @@ import Deps
   (findDeps
   ,displayDeps
   ,impsAdjc
-  ,reduceDeps
-  ,Deps(..))
+  ,reduceDeps)
 
-import Imps
+import Chns
+  (mkChains
+  ,maxChains
+  ,Chains)
+
+import Typs
   (ModWithImps(..)
-  ,ModId(..))
+  ,ModId(..)
+  ,Deps(..))
 
 import Data.List
   (elemIndices)
+
+import Data.Map
+  (fromList)
 
 main :: IO ()
 main =
@@ -53,6 +61,15 @@ main =
         out `shouldSatisfy` (containsOnce 'A')
         out `shouldSatisfy` (containsOnce 'B')
         out `shouldSatisfy` (containsOnce 'C')
+
+    describe "chns" $ do
+      it "makes chains from root and adjaceny" $ do
+        let root = dps_root demoDeps
+        let chns = mkChains (dps_adjc demoDeps) root [root]
+        chns `shouldBe` demoChains
+
+      it "turns chains into map from terminal to max" $ do
+        maxChains demoChains `shouldBe` fromList [(demoC, demoChains !! 0)]
 
 containsOnce :: Char -> String -> Bool
 containsOnce c =
@@ -78,6 +95,11 @@ demoB =
 demoC :: ModId
 demoC =
   ModId "C"
+
+demoChains :: Chains
+demoChains =
+  [[demoC, demoB, demoA]
+  ,[demoC, demoA]]
 
 runHelp :: IO String
 runHelp =

@@ -1,3 +1,4 @@
 module B where
 
-import C
+import D
+import G

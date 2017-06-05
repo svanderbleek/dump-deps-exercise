@@ -7,13 +7,16 @@ library
   hs-source-dirs: src
   exposed-modules:
     Deps,
-    Imps
+    Imps,
+    Chns,
+    Typs
   build-depends:
     base,
     ghc,
     ghc-paths,
     filemanip,
     mtl,
+    monad-loops,
     containers
 
 test-suite test

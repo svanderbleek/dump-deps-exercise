@@ -1,8 +1,10 @@
 module Imps
-  (fileImps
-  ,ModWithImps(..)
-  ,ModId(..))
+  (fileImps)
 where
+
+import Typs
+  (ModWithImps(..)
+  ,ModId(..))
 
 import GHC
   (runGhc
@@ -26,16 +28,6 @@ import GHC.Paths
 
 import Control.Monad.IO.Class
   (liftIO)
-
-data ModId
-  = ModId String
-  deriving (Eq, Ord, Show)
-
-data ModWithImps
-  = ModWithImps
-  { mwi_name :: ModId
-  , mwi_imps :: [ModId] }
-  deriving (Show)
 
 fileImps :: FilePath -> IO ModWithImps
 fileImps file =

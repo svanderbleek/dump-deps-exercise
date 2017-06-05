@@ -13,6 +13,7 @@ library
     ghc,
     ghc-paths,
     filemanip,
+    mtl,
     containers
 
 test-suite test

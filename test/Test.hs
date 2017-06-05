@@ -21,6 +21,7 @@ import Deps
   (findDeps
   ,displayDeps
   ,impsAdjc
+  ,reduceDeps
   ,Deps(..))
 
 import Imps
@@ -47,8 +48,8 @@ main =
         code `shouldBe` ExitSuccess
 
     describe "deps" $ do
-      it "displays clean module dependencys" $ do
-        let out = displayDeps demoDeps
+      it "displays reduced module dependencys" $ do
+        let out = displayDeps . reduceDeps $ demoDeps
         out `shouldSatisfy` (containsOnce 'A')
         out `shouldSatisfy` (containsOnce 'B')
         out `shouldSatisfy` (containsOnce 'C')
